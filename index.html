@@ -461,30 +461,30 @@ function renderBird() {
       }
     }).catch(function() {});
 
-  // Audio – reset player, then find a live audio file via Wikimedia Commons search API
-  currentAudio = b.audio; // keep stale OGG as last-resort fallback
+  // Audio: get the audio file Wikipedia's own article uses for this species.
+  // The media-list API only returns files that actually exist on Wikimedia right now –
+  // so the URL is always valid, unlike the hardcoded OGG URLs in the bird data.
+  currentAudio = b.audio; // stale OGG as last-resort while fetch is in flight
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
   if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Finding sound\u2026'; }
-  var _bName = b.n, _bLatin = b.l.split(' ').slice(0, 2).join(' ');
-  // Query Wikimedia Commons for audio files matching this species – returns current, working URLs
-  fetch('https://commons.wikimedia.org/w/api.php?action=query&generator=search' +
-        '&gsrnamespace=6&gsrsearch=' + encodeURIComponent(_bLatin) +
-        '&gsrlimit=10&prop=imageinfo&iiprop=url|mediatype&format=json&origin=*')
+  var _bName = b.n, _bWiki = b.wiki;
+  fetch('https://en.wikipedia.org/api/rest_v1/page/media-list/' + encodeURIComponent(_bWiki))
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (document.getElementById('bName').textContent !== _bName) return;
       var found = null;
-      if (d.query && d.query.pages) {
-        var keys = Object.keys(d.query.pages);
-        for (var i = 0; i < keys.length; i++) {
-          var info = d.query.pages[keys[i]].imageinfo;
-          if (info && info[0] && info[0].mediatype === 'AUDIO' && info[0].url) {
-            found = info[0].url; break;
-          }
+      if (d.items) {
+        for (var i = 0; i < d.items.length; i++) {
+          var item = d.items[i];
+          if (item.type !== 'audio' || !item.original || !item.original.source) continue;
+          // skip spoken-word pronunciation clips (En-us-birdname.oga etc)
+          var fname = item.original.source.split('/').pop().toLowerCase();
+          if (/^en-|^spoken|pron/.test(fname)) continue;
+          found = item.original.source; break;
         }
       }
       if (found) currentAudio = found;
@@ -530,8 +530,10 @@ function playAudio() {
         if (btn) { btn.innerHTML = '&#9646;&#9646; Pause'; btn.style.background = '#c4785a'; }
         if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Now playing…'; }
       })
-      .catch(function() {
-        if (meta) { meta.className = 'audio-meta err'; meta.textContent = 'Could not load audio'; }
+      .catch(function(e) {
+        var msg = 'Could not load audio';
+        if (e && e.name) msg += ' (' + e.name + ')';
+        if (meta) { meta.className = 'audio-meta err'; meta.textContent = msg; }
       });
   } else {
     player.pause();

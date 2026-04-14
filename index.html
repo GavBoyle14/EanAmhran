@@ -461,10 +461,10 @@ function renderBird() {
       }
     }).catch(function() {});
 
-  // Audio: get the audio file Wikipedia's own article uses for this species.
-  // The media-list API only returns files that actually exist on Wikimedia right now –
-  // so the URL is always valid, unlike the hardcoded OGG URLs in the bird data.
-  currentAudio = b.audio; // stale OGG as last-resort while fetch is in flight
+  // Audio: query the Wikipedia article's embedded files to find a live audio URL.
+  // generator=images returns ALL File: references in the article (images + audio)
+  // with their actual current Wikimedia URLs – guaranteed non-404.
+  currentAudio = ''; // cleared so playAudio() won't try stale 404 URLs
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
@@ -472,32 +472,34 @@ function renderBird() {
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
   if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Finding sound\u2026'; }
   var _bName = b.n, _bWiki = b.wiki;
-  fetch('https://en.wikipedia.org/api/rest_v1/page/media-list/' + encodeURIComponent(_bWiki))
+  fetch('https://en.wikipedia.org/w/api.php?action=query&generator=images&gimlimit=50' +
+        '&titles=' + encodeURIComponent(_bWiki) +
+        '&prop=imageinfo&iiprop=url|mediatype&format=json&origin=*')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (document.getElementById('bName').textContent !== _bName) return;
       var found = null;
-      if (d.items) {
-        for (var i = 0; i < d.items.length; i++) {
-          var item = d.items[i];
-          if (item.type !== 'audio' || !item.original || !item.original.source) continue;
-          // skip spoken-word pronunciation clips (En-us-birdname.oga etc)
-          var fname = item.original.source.split('/').pop().toLowerCase();
-          if (/^en-|^spoken|pron/.test(fname)) continue;
-          found = item.original.source; break;
+      if (d.query && d.query.pages) {
+        var keys = Object.keys(d.query.pages);
+        for (var i = 0; i < keys.length; i++) {
+          var pg = d.query.pages[keys[i]];
+          var info = pg.imageinfo;
+          if (info && info[0] && info[0].mediatype === 'AUDIO' && info[0].url) {
+            found = info[0].url; break;
+          }
         }
       }
       if (found) currentAudio = found;
       var m2 = document.getElementById('aMeta');
       if (m2 && document.getElementById('bName').textContent === _bName) {
-        m2.className = 'audio-meta ok';
-        m2.textContent = found ? 'Tap play to hear this bird' : 'Tap play (sound may be unavailable)';
+        m2.className = found ? 'audio-meta ok' : 'audio-meta err';
+        m2.textContent = found ? 'Tap play to hear this bird' : 'No sound found for this bird';
       }
     })
     .catch(function() {
       var m2 = document.getElementById('aMeta');
       if (m2 && document.getElementById('bName').textContent === _bName) {
-        m2.className = 'audio-meta ok'; m2.textContent = 'Tap play to hear this bird';
+        m2.className = 'audio-meta err'; m2.textContent = 'Could not fetch audio info';
       }
     });
 }
@@ -514,7 +516,11 @@ function playAudio() {
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
-  if (!player || !currentAudio) return;
+  if (!player) return;
+  if (!currentAudio) {
+    if (meta) { meta.className = 'audio-meta err'; meta.textContent = 'No sound available for this bird'; }
+    return;
+  }
 
   if (player.paused) {
     if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Loading…'; }

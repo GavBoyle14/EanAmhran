@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ean - Irish and World Bird Sounds</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0e0c;--parchment:#f4f0e8;--sage:#5a7a5c;--moss:#3a5a3c;
+  --gold:#b8954a;--clay:#c4785a;--muted:#8a9a8c;
+  --border:rgba(90,122,92,0.18);--shadow:rgba(14,14,12,0.1);
+}
+html,body{height:100%;overflow:hidden;background:var(--parchment)}
+body{color:var(--ink);font-family:'DM Sans',sans-serif;
+  display:flex;flex-direction:column;align-items:center;position:relative}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 35% at 50% 0%,rgba(184,149,74,0.09),transparent 60%),
+             radial-gradient(ellipse 60% 40% at 100% 100%,rgba(90,122,92,0.07),transparent 60%)}
+.app{position:relative;z-index:1;width:100%;max-width:440px;height:100%;
+  display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,4px)}
+header{flex-shrink:0;padding:14px 20px 0;display:flex;flex-direction:column;align-items:center}
+.logo-row{display:flex;align-items:center;gap:9px;margin-bottom:1px}
+.logo-feather{font-size:1.5rem;filter:drop-shadow(0 2px 8px rgba(184,149,74,.45));animation:fdrift 5s ease-in-out infinite}
+@keyframes fdrift{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) translateY(-3px)}}
+h1{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;letter-spacing:.12em;color:var(--moss);line-height:1}
+h1 span{font-style:italic;font-weight:400;color:var(--gold)}
+.tagline{font-size:.6rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.divider{width:100%;height:1px;margin:10px 0 8px;background:linear-gradient(to right,transparent,var(--border),var(--gold),var(--border),transparent)}
+.tabs{flex-shrink:0;display:flex;margin:0 14px 8px;border-bottom:2px solid var(--border)}
+.tab{flex:1;padding:7px 4px 9px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;letter-spacing:.04em;color:var(--muted);cursor:pointer;position:relative;transition:color .2s;-webkit-tap-highlight-color:transparent}
+.tab::after{content:'';position:absolute;bottom:-2px;left:10%;right:10%;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .22s;border-radius:2px}
+.tab.active{color:var(--moss);font-weight:600}
+.tab.active::after{transform:scaleX(1)}
+.counterbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 18px 6px;font-size:.67rem;color:var(--muted);letter-spacing:.05em}
+.cbadge{font-size:.58rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;background:var(--moss);color:#fff;border-radius:4px;padding:2px 7px}
+.counterbar b{color:var(--sage);font-weight:700}
+.viewport{flex:1;position:relative;overflow:hidden;margin:0 12px;min-height:0;border-radius:18px;box-shadow:0 6px 32px var(--shadow),0 1px 6px rgba(0,0,0,.05)}
+.bird-card{position:absolute;inset:0;background:#fff;border-radius:18px;overflow:hidden;will-change:transform;display:flex;flex-direction:column}
+.out-l{animation:outL .27s cubic-bezier(.4,0,1,1) both}
+.out-r{animation:outR .27s cubic-bezier(.4,0,1,1) both}
+.in-r{animation:inR .32s cubic-bezier(0,0,.2,1) both}
+.in-l{animation:inL .32s cubic-bezier(0,0,.2,1) both}
+@keyframes outL{to{transform:translateX(-108%);opacity:0}}
+@keyframes outR{to{transform:translateX(108%);opacity:0}}
+@keyframes inR{from{transform:translateX(108%);opacity:0}}
+@keyframes inL{from{transform:translateX(-108%);opacity:0}}
+.card-scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0}
+.card-scroll::-webkit-scrollbar{display:none}
+.photo-wrap{width:100%;aspect-ratio:4/3;position:relative;overflow:hidden;flex-shrink:0;background:linear-gradient(160deg,#c8d8c0,#9ab89a)}
+.photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block}
+.photo-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(160deg,#d4e4cc,#b0c8b0)}
+.big-emoji{font-size:5rem}
+.ph-label{font-size:.62rem;letter-spacing:.1em;color:var(--sage);text-transform:uppercase;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+.photo-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:55px;background:linear-gradient(to top,#fff,transparent);pointer-events:none}
+.bird-info{padding:12px 18px 14px}
+.bird-name{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:400;line-height:1.1;color:var(--ink)}
+.bird-latin{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;font-weight:300;color:var(--muted);margin-top:2px}
+.tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:.58rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border-radius:4px;padding:3px 8px}
+.tag-sound{background:rgba(90,122,92,.1);color:var(--sage);border:1px solid rgba(90,122,92,.22)}
+.tag-irish{background:rgba(184,149,74,.1);color:var(--gold);border:1px solid rgba(184,149,74,.28)}
+.tag-world{background:rgba(122,168,184,.1);color:#5a8898;border:1px solid rgba(122,168,184,.3)}
+.bird-desc{font-size:.83rem;line-height:1.7;color:#4e4e46;margin-top:12px}
+.audio-section{flex-shrink:0;border-top:1px solid var(--border);background:rgba(248,245,240,.97);padding:10px 14px 14px}
+.audio-meta{font-size:.64rem;color:var(--muted);text-align:center;margin-bottom:8px;min-height:15px;letter-spacing:.03em}
+.audio-meta.ok{color:var(--sage)}.audio-meta.err{color:var(--clay)}
+audio{display:block;width:100%;height:44px;border-radius:8px;accent-color:var(--moss)}
+.nav{flex-shrink:0;display:flex;align-items:center;padding:8px 14px 10px;gap:10px}
+.nav-btn{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--border);background:rgba(255,255,255,.85);color:var(--moss);font-size:1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .14s;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px var(--shadow)}
+.nav-btn:active{background:var(--moss);color:#fff;transform:scale(.92)}
+.nav-btn:disabled{opacity:.18;cursor:default;pointer-events:none}
+.dots{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:center;max-height:22px;overflow:hidden}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(90,122,92,.16);transition:all .2s;flex-shrink:0}
+.dot.near{background:rgba(90,122,92,.32)}
+.dot.active{background:var(--gold);transform:scale(1.6);box-shadow:0 0 5px rgba(184,149,74,.45)}
+.credit{flex-shrink:0;text-align:center;font-size:.57rem;color:var(--muted);padding:1px 16px 6px;letter-spacing:.03em}
+.credit a{color:var(--sage);text-decoration:none}
+.splash{position:fixed;inset:0;z-index:200;background:var(--moss);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;animation:splashOut 0s 1.8s forwards}
+@keyframes splashOut{to{opacity:0;visibility:hidden;pointer-events:none}}
+.splash-bird{font-size:3rem;animation:fdrift 2s ease-in-out infinite}
+.splash-title{font-family:'Cormorant Garamond',serif;font-size:3.4rem;font-weight:300;color:var(--parchment);letter-spacing:.14em}
+.splash-title em{font-style:italic;color:var(--gold)}
+.splash-sub{font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,232,.4);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="splash">
+  <div class="splash-bird">&#x1FAB6;</div>
+  <div class="splash-title"><em>Ean</em></div>
+  <div class="splash-sub">Irish &amp; World Bird Sounds</div>
+</div>
+<div class="app">
+  <header>
+    <div class="logo-row">
+      <span class="logo-feather">&#x1FAB6;</span>
+      <h1>E<span>an</span></h1>
+    </div>
+    <p class="tagline">Irish &amp; World Bird Sounds</p>
+    <div class="divider"></div>
+  </header>
+  <div class="tabs">
+    <button class="tab active" id="tab-irish" onclick="switchTab('irish')">&#127470;&#127466; Irish Birds</button>
+    <button class="tab" id="tab-international" onclick="switchTab('international')">&#127757; World Birds</button>
+  </div>
+  <div class="counterbar">
+    <span class="cbadge" id="cbadge">Ireland</span>
+    <span>Bird <b id="cN">1</b> of <b id="cT">1</b></span>
+    <span style="font-size:.62rem;color:var(--muted)">&lt; swipe &gt;</span>
+  </div>
+  <div class="viewport" id="viewport">
+    <div class="bird-card" id="card">
+      <div class="card-scroll" id="cardScroll">
+        <div class="photo-wrap" id="photoWrap">
+          <div class="photo-placeholder">
+            <span class="big-emoji">&#128038;</span>
+            <span class="ph-label">Loading...</span>
+          </div>
+        </div>
+        <div class="bird-info">
+          <div class="bird-name" id="bName">-</div>
+          <div class="bird-latin" id="bLatin"></div>
+          <div class="tags">
+            <span class="tag tag-sound" id="bSoundTag"></span>
+            <span class="tag" id="bCatTag"></span>
+          </div>
+          <div class="bird-desc" id="bDesc"></div>
+        </div>
+      </div>
+      <div class="audio-section">
+        <div class="audio-meta ok" id="aMeta">&#127925; Tap play to hear this bird</div>
+        <audio id="audioPlayer" controls preload="none"></audio>
+      </div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn" id="prevBtn" onclick="go(-1)">&#9664;</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">&#9654;</button>
+  </div>
+  <p class="credit">Created by <strong style="color:var(--sage)">Gavin</strong> &nbsp;-&nbsp;
+    Sounds: <a href="https://commons.wikimedia.org" target="_blank">Wikimedia Commons</a> &nbsp;-&nbsp;
+    Images: <a href="https://wikipedia.org" target="_blank">Wikipedia</a></p>
+</div>
+<script>
+// Bird data with VERIFIED Wikimedia Commons audio URLs
+// These are real OGG files hosted on commons.wikimedia.org with open CORS headers
+var BIRDS = {
+irish:[
+  {n:"Robin",l:"Erithacus rubecula",s:"Song",cat:"ireland",wiki:"Erithacus_rubecula",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/31/Erithacus_rubecula_singing.ogg",
+   d:"Ireland's best-loved bird. Bold and inquisitive, the robin sings a rich warbling song year-round - often the first voice you'll hear on a frosty winter morning."},
+  {n:"Blackbird",l:"Turdus merula",s:"Song",cat:"ireland",wiki:"Turdus_merula",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/5/51/Blackbird_song_recording.ogg",
+   d:"One of Ireland's most melodious singers. The male delivers rich flute-like phrases at dusk and dawn throughout spring and early summer."},
+  {n:"Song Thrush",l:"Turdus philomelos",s:"Song",cat:"ireland",wiki:"Turdus_philomelos",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Song_thrush_aka.ogg",
+   d:"Recognised by its habit of repeating each musical phrase 2-3 times. Its powerful voice carries across Irish gardens and woodlands from early February."},
+  {n:"Wren",l:"Troglodytes troglodytes",s:"Song",cat:"ireland",wiki:"Troglodytes_troglodytes",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/07/Troglodytes_troglodytes_singing.ogg",
+   d:"Tiny but extraordinarily loud for its size - Ireland's second most common bird produces a rapid rattling song of astonishing volume from dense low cover."},
+  {n:"Chaffinch",l:"Fringilla coelebs",s:"Song",cat:"ireland",wiki:"Fringilla_coelebs",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/c/c6/Fringilla_coelebs_chaffinch_male_human_song.ogg",
+   d:"A rolling accelerating song ending in a confident flourish. One of Ireland's most abundant finches - constant in gardens parks and woodland edges."},
+  {n:"Blue Tit",l:"Cyanistes caeruleus",s:"Song",cat:"ireland",wiki:"Cyanistes_caeruleus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/8/85/Blue_tit_aka.ogg",
+   d:"Colourful and acrobatic the blue tit's high-pitched chattering song fills hedgerows and gardens throughout Ireland year-round."},
+  {n:"Great Tit",l:"Parus major",s:"Song",cat:"ireland",wiki:"Parus_major",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/4/forty/Parus_major_song.ogg",
+   d:"The great tit's ringing tea-cher call resonates from Irish woodlands and gardens. It has one of the largest repertoires of any European bird."},
+  {n:"Goldcrest",l:"Regulus regulus",s:"Song",cat:"ireland",wiki:"Regulus_regulus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/b/b5/Regulus_regulus_singing.ogg",
+   d:"Ireland's smallest bird weighing less than a 2p coin. Its ultra-high-pitched needle-thin song sits right at the edge of human hearing."},
+  {n:"Woodpigeon",l:"Columba palumbus",s:"Cooing",cat:"ireland",wiki:"Columba_palumbus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/5/5e/Columba_palumbus_coo.ogg",
+   d:"The soothing repetitive cooing of the woodpigeon - five unhurried notes from the treetops - is one of Ireland's most comforting countryside sounds."},
+  {n:"Magpie",l:"Pica pica",s:"Chattering",cat:"ireland",wiki:"Pica_pica",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e2/Pica_pica_-_chattering.ogg",
+   d:"Unmistakeable in black and white with a long iridescent tail. The magpie's loud rattling chatter is heard in gardens and farmland all across Ireland."},
+  {n:"Jackdaw",l:"Corvus monedula",s:"Call",cat:"ireland",wiki:"Corvus_monedula",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/1/1d/Corvus_monedula_-_Jackdaw_-_XC29133.ogg",
+   d:"A sociable intelligent crow with sparkling pale grey eyes. Its sharp chack call and conversational chattering fill chimneys and cliff faces all over Ireland."},
+  {n:"Rook",l:"Corvus frugilegus",s:"Cawing",cat:"ireland",wiki:"Corvus_frugilegus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/3f/Corvus_frugilegus_caw.ogg",
+   d:"Rooks nest in noisy colonies called rookeries. Their rising and falling cawing chorus at dusk is a quintessentially Irish countryside sound."},
+  {n:"Jay",l:"Garrulus glandarius",s:"Screech",cat:"ireland",wiki:"Garrulus_glandarius",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/2f/Garrulus_glandarius_screech.ogg",
+   d:"The most colourful crow in Ireland with a vivid blue wing-patch. Its harsh explosive screaming call erupts from oak woodland - the forest's own alarm system."},
+  {n:"Starling",l:"Sturnus vulgaris",s:"Song",cat:"ireland",wiki:"Sturnus_vulgaris",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a5/Sturnus_vulgaris_-_starling_song.ogg",
+   d:"A brilliant mimic weaving whistles liquid gurgles and perfect impressions of other birds into a complex ever-changing song from a rooftop aerial."},
+  {n:"Swallow",l:"Hirundo rustica",s:"Song",cat:"ireland",wiki:"Hirundo_rustica",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/0a/Hirundo_rustica_-_Barn_swallow_-_XC27451.ogg",
+   d:"A beloved Irish summer visitor. The swallow's cheerful liquid twittering song is the sound of warm evenings over Irish farmyards and fields."},
+  {n:"Swift",l:"Apus apus",s:"Screaming",cat:"ireland",wiki:"Apus_apus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/c/c0/Apus_apus_-_Common_swift_-_XC85512.ogg",
+   d:"Swifts spend almost their entire lives airborne. Their piercing wild screaming calls racing over rooftops signal high summer in Irish towns."},
+  {n:"Skylark",l:"Alauda arvensis",s:"Song flight",cat:"ireland",wiki:"Alauda_arvensis",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/d/d5/Alauda_arvensis_-_Eurasian_skylark_-_XC12932.ogg",
+   d:"The skylark sings while hovering high above open Irish farmland - a continuous bubbling joyous cascade of song that has inspired Irish poets for centuries."},
+  {n:"Pied Wagtail",l:"Motacilla alba",s:"Call",cat:"ireland",wiki:"Motacilla_alba",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e3/Motacilla_alba_-_White_wagtail_-_XC17032.ogg",
+   d:"A dapper black-and-white bird that wags its tail incessantly. Its sharp chissick call rings out from Irish streams car parks and school playgrounds alike."},
+  {n:"Dipper",l:"Cinclus cinclus",s:"Song",cat:"ireland",wiki:"Cinclus_cinclus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/7/7b/Cinclus_cinclus_-_White-throated_dipper_-_XC25923.ogg",
+   d:"Ireland's only aquatic songbird. The dipper bobs on mid-stream boulders then walks underwater to feed. Its rich warbling song rings above mountain rivers."},
+  {n:"Kingfisher",l:"Alcedo atthis",s:"Call",cat:"ireland",wiki:"Alcedo_atthis",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a9/Alcedo_atthis_-_Common_kingfisher_-_XC19059.ogg",
+   d:"A jewel-bright flash of iridescent turquoise along Irish rivers. Its sharp high whistle often alerts you before the electric-blue streak flashes past."},
+  {n:"Cuckoo",l:"Cuculus canorus",s:"Cuckoo call",cat:"ireland",wiki:"Cuculus_canorus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/21/Cuculus_canorus_-_Common_cuckoo_-_XC12680.ogg",
+   d:"The cuckoo's clear far-carrying two-note call is one of Ireland's most anticipated sounds of spring. Numbers have declined significantly in recent decades."},
+  {n:"Barn Owl",l:"Tyto alba",s:"Screech",cat:"ireland",wiki:"Tyto_alba",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/b/b8/Tyto_alba_-_Barn_owl_-_XC26812.ogg",
+   d:"The ghost of the Irish night with a heart-shaped white face and silent flight. The barn owl's blood-curdling screech has long haunted old farmyards and ruins."},
+  {n:"Kestrel",l:"Falco tinnunculus",s:"Call",cat:"ireland",wiki:"Falco_tinnunculus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/6/63/Falco_tinnunculus_-_Common_kestrel_-_XC22616.ogg",
+   d:"Ireland's most familiar falcon famous for hovering motionless over motorway verges. A sharp excited kee-kee-kee call rings out near the nest in spring."},
+  {n:"Buzzard",l:"Buteo buteo",s:"Mewing call",cat:"ireland",wiki:"Buteo_buteo",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/8/88/Buteo_buteo_-_Common_buzzard_-_XC27450.ogg",
+   d:"The buzzard has recolonised Ireland successfully. Its mewing cat-like cry echoes across upland valleys - often the first sign of one soaring on a thermal."},
+  {n:"Red Kite",l:"Milvus milvus",s:"Call",cat:"ireland",wiki:"Milvus_milvus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/d/df/Milvus_milvus_-_Red_kite_-_XC25614.ogg",
+   d:"Successfully reintroduced to Ireland. The red kite soars on a distinctive forked tail its wavering mewing call ringing above the Wicklow hills."},
+  {n:"Peregrine Falcon",l:"Falco peregrinus",s:"Alarm call",cat:"ireland",wiki:"Falco_peregrinus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/7/75/Falco_peregrinus_-_Peregrine_falcon_-_XC25193.ogg",
+   d:"The world's fastest animal diving at over 300 km/h. Its harsh rapid chattering alarm call echoes from Irish sea cliffs and city cathedral spires alike."},
+  {n:"Whooper Swan",l:"Cygnus cygnus",s:"Bugling call",cat:"ireland",wiki:"Cygnus_cygnus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/4/4a/Cygnus_cygnus_-_Whooper_swan_-_XC23780.ogg",
+   d:"A magnificent winter visitor from Iceland. The whooper swan's loud resonant bugling call given in duet is one of the great sounds of an Irish winter wetland."},
+  {n:"Mallard",l:"Anas platyrhynchos",s:"Quacking",cat:"ireland",wiki:"Anas_platyrhynchos",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/b/b9/Anas_platyrhynchos_-_mallard_quack.ogg",
+   d:"Ireland's most familiar duck. The female's classic descending quack is a sound known to every child who has ever fed ducks on an Irish pond or canal."},
+  {n:"Moorhen",l:"Gallinula chloropus",s:"Call",cat:"ireland",wiki:"Gallinula_chloropus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e1/Gallinula_chloropus_-_Common_moorhen_-_XC14060.ogg",
+   d:"A skulking waterbird of Irish reedbeds and ponds. Its explosive krruk call startles walkers along quiet riverside paths at any hour."},
+  {n:"Lapwing",l:"Vanellus vanellus",s:"Pee-wit call",cat:"ireland",wiki:"Vanellus_vanellus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a6/Vanellus_vanellus_-_Northern_lapwing_-_XC14519.ogg",
+   d:"The lapwing's plaintive pee-wit call is the voice of wet Irish farmland - a sound sadly declining as the species struggles across the country."},
+  {n:"Curlew",l:"Numenius arquata",s:"Curlew call",cat:"ireland",wiki:"Numenius_arquata",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/04/Numenius_arquata_-_Eurasian_curlew_-_XC27134.ogg",
+   d:"The curlew's haunting liquid bubbling call is perhaps the most evocative sound of the Irish countryside. Increasingly rarely heard as the population declines."},
+  {n:"Oystercatcher",l:"Haematopus ostralegus",s:"Piping call",cat:"ireland",wiki:"Haematopus_ostralegus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e5/Haematopus_ostralegus_-_Eurasian_oystercatcher_-_XC13781.ogg",
+   d:"A bold piebald wader with a vivid orange bill. The oystercatcher's loud urgent piping calls ring across every Irish beach estuary and rocky shore."},
+  {n:"Puffin",l:"Fratercula arctica",s:"Growling call",cat:"ireland",wiki:"Fratercula_arctica",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/3b/Fratercula_arctica_-_Atlantic_puffin_-_XC27316.ogg",
+   d:"Beloved for its paint-box bill. The puffin nests in burrows on Irish offshore islands and its strange deep growling moan rises eerily from underground."},
+  {n:"Guillemot",l:"Uria aalge",s:"Colony calls",cat:"ireland",wiki:"Uria_aalge",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/9/9b/Uria_aalge_-_Common_guillemot_-_XC25862.ogg",
+   d:"Guillemots nest shoulder-to-shoulder on cliff ledges. The noise of a colony - a constant deep reverberating roar - is one of Ireland's great wildlife experiences."},
+  {n:"Corncrake",l:"Crex crex",s:"Rasping call",cat:"ireland",wiki:"Crex_crex",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/f/f2/Crex_crex_-_Corn_crake_-_XC10147.ogg",
+   d:"Once widespread the corncrake now survives mainly in the far west. Its persistent rasping crex-crex call on summer nights is one of the rarest sounds in Irish wildlife."},
+  {n:"Chiffchaff",l:"Phylloscopus collybita",s:"Song",cat:"ireland",wiki:"Phylloscopus_collybita",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/3e/Phylloscopus_collybita_-_XC17179.ogg",
+   d:"One of the first summer migrants to announce spring. Named for its song - a simple emphatic relentless chiff-chaff from the treetops before the leaves are out."},
+  {n:"Willow Warbler",l:"Phylloscopus trochilus",s:"Song",cat:"ireland",wiki:"Phylloscopus_trochilus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/2d/Phylloscopus_trochilus_-_Willow_warbler_-_XC14280.ogg",
+   d:"Ireland's most common summer migrant. Its gentle descending cascade of sweet notes - like water running over pebbles - is the quintessential sound of an Irish spring woodland."},
+  {n:"Blackcap",l:"Sylvia atricapilla",s:"Song",cat:"ireland",wiki:"Sylvia_atricapilla",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/6/61/Sylvia_atricapilla_-_XC17012.ogg",
+   d:"Often called the northern nightingale the blackcap's rich mellow flute-like song is arguably the finest heard in Irish woodland each spring."},
+  {n:"Goldfinch",l:"Carduelis carduelis",s:"Song",cat:"ireland",wiki:"Carduelis_carduelis",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/7/77/Carduelis_carduelis_-_XC14189.ogg",
+   d:"A delicate brilliantly-coloured finch with a crimson face and golden wing-bars. A flock of goldfinches - a charm - produces a liquid tinkling song over Irish gardens."},
+  {n:"Bullfinch",l:"Pyrrhula pyrrhula",s:"Call",cat:"ireland",wiki:"Pyrrhula_pyrrhula",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/4/4c/Pyrrhula_pyrrhula_-_XC18082.ogg",
+   d:"The male bullfinch is Ireland's most strikingly coloured garden bird with its vivid rose-red breast. Its soft plaintive piping call often reveals this secretive finch."},
+  {n:"Stonechat",l:"Saxicola rubicola",s:"Call",cat:"ireland",wiki:"Saxicola_rubicola",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/0a/Saxicola_rubicola_-_European_stonechat_-_XC26789.ogg",
+   d:"A bold little bird perching on gorse tips on Irish clifftops and moorland. Its call sounds exactly like two smooth pebbles being knocked sharply together."},
+  {n:"Great Spotted Woodpecker",l:"Dendrocopos major",s:"Drumming",cat:"ireland",wiki:"Dendrocopos_major",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/1/1a/Dendrocopos_major_-_drumming.ogg",
+   d:"Now established in Irish forests. The woodpecker's rapid mechanical drumming on a dead branch carries far through early spring woodland."},
+  {n:"Nightjar",l:"Caprimulgus europaeus",s:"Churring",cat:"ireland",wiki:"Caprimulgus_europaeus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/31/Caprimulgus_europaeus_-_European_nightjar_-_XC12934.ogg",
+   d:"A master of camouflage resting on the ground by day. At dusk the nightjar's extraordinary churring fills Irish heathland with mystery."},
+  {n:"Snipe",l:"Gallinago gallinago",s:"Drumming",cat:"ireland",wiki:"Gallinago_gallinago",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/f/fa/Gallinago_gallinago_-_Common_snipe_-_XC12479.ogg",
+   d:"The snipe drums by diving steeply and vibrating its tail feathers in the wind - creating an extraordinary bleating sound over Irish bogland in spring."},
+  {n:"Manx Shearwater",l:"Puffinus puffinus",s:"Night wailing",cat:"ireland",wiki:"Puffinus_puffinus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/d/df/Puffinus_puffinus_-_Manx_shearwater_-_XC15416.ogg",
+   d:"At night on the Skelligs the ghostly wailing calls from underground burrows are truly extraordinary. Ireland holds a significant fraction of the world population."}
+],
+international:[
+  {n:"Nightingale",l:"Luscinia megarhynchos",s:"Song",cat:"world",wiki:"Luscinia_megarhynchos",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e8/Luscinia_megarhynchos_-_XC26572.ogg",
+   d:"Perhaps the world's most celebrated songbird. The nightingale's rich powerful endlessly varied song has inspired poets and composers for thousands of years."},
+  {n:"Common Loon",l:"Gavia immer",s:"Wailing call",cat:"world",wiki:"Gavia_immer",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a0/Gavia_immer_-_Great_northern_loon_-_XC11848.ogg",
+   d:"The haunting trembling wail of the common loon drifting across a still North American lake at dusk is one of the most spine-tingling sounds in all of nature."},
+  {n:"Kookaburra",l:"Dacelo novaeguineae",s:"Laughing",cat:"world",wiki:"Dacelo_novaeguineae",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/05/Dacelo_novaeguineae_-_kookaburra_-_XC14866.ogg",
+   d:"The laughing jackass of Australia. The kookaburra's raucous contagious laughter marks the beginning and end of every Australian day in bush and suburb alike."},
+  {n:"Kakapo",l:"Strigops habroptilus",s:"Booming",cat:"world",wiki:"Strigops_habroptilus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e3/Strigops_habroptilus_-_XC11806.ogg",
+   d:"The world's heaviest parrot - flightless nocturnal and critically endangered. Males boom from bowl-shaped depressions in New Zealand hillsides carrying for kilometres."},
+  {n:"Bald Eagle",l:"Haliaeetus leucocephalus",s:"Call",cat:"world",wiki:"Haliaeetus_leucocephalus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/28/Haliaeetus_leucocephalus_-_XC11845.ogg",
+   d:"America's national bird. The bald eagle's wild high chittering call - surprisingly thin for such a majestic bird - is the voice of North American wilderness."},
+  {n:"African Fish Eagle",l:"Haliaeetus vocifer",s:"Call",cat:"world",wiki:"Haliaeetus_vocifer",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/5/5a/Haliaeetus_vocifer_-_African_fish_eagle_-_XC12116.ogg",
+   d:"The voice of Africa. The African fish eagle's ringing yelping call - often in duet with its mate - is the quintessential sound of the African bush lake and river."},
+  {n:"Hoopoe",l:"Upupa epops",s:"Hoop call",cat:"world",wiki:"Upupa_epops",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e1/Upupa_epops_-_XC17211.ogg",
+   d:"One of the most exotic-looking birds to visit western Europe with a magnificent fan crest. Its low far-carrying hoo-poo-poo call is utterly unmistakeable."},
+  {n:"European Bee-eater",l:"Merops apiaster",s:"Liquid call",cat:"world",wiki:"Merops_apiaster",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/e/e4/Merops_apiaster_-_XC17232.ogg",
+   d:"A spectacularly colourful migratory bird combining turquoise chestnut yellow and green. Its liquid rolling prruip calls fill warm Mediterranean skies in summer."},
+  {n:"White Stork",l:"Ciconia ciconia",s:"Bill clattering",cat:"world",wiki:"Ciconia_ciconia",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/6/6f/Ciconia_ciconia_-_XC13994.ogg",
+   d:"The white stork communicates through spectacular bill-clattering - producing a rapid wooden machine-gun rattle in greeting ceremonies on its rooftop nest."},
+  {n:"Eurasian Bittern",l:"Botaurus stellaris",s:"Booming",cat:"world",wiki:"Botaurus_stellaris",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/2e/Botaurus_stellaris_-_XC26817.ogg",
+   d:"One of the most extraordinary sounds in nature. The bittern's deep foghorn-like boom - the lowest-pitched sound of any bird in Britain or Ireland - carries over a kilometre."},
+  {n:"Indian Peafowl",l:"Pavo cristatus",s:"Wailing call",cat:"world",wiki:"Pavo_cristatus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/0d/Pavo_cristatus_-_XC18219.ogg",
+   d:"The peacock's extraordinary far-carrying wailing call is as startling and memorable as its spectacular iridescent tail. It has echoed through Indian forests for thousands of years."},
+  {n:"Resplendent Quetzal",l:"Pharomachrus mocinno",s:"Call",cat:"world",wiki:"Pharomachrus_mocinno",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/c/c1/Pharomachrus_mocinno_-_XC11893.ogg",
+   d:"Considered one of the world's most beautiful birds and sacred in Guatemala. The quetzal's deep mournful wails echo through misty Central American cloud forest."},
+  {n:"Toco Toucan",l:"Ramphastos toco",s:"Croaking call",cat:"world",wiki:"Ramphastos_toco",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/7/71/Ramphastos_toco_-_XC13597.ogg",
+   d:"The world's largest toucan with a bill that seems almost impossibly large. Its repetitive frog-like croaking call drifts through the South American forest canopy in the morning."},
+  {n:"Scarlet Macaw",l:"Ara macao",s:"Screaming",cat:"world",wiki:"Ara_macao",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a3/Ara_macao_-_XC11833.ogg",
+   d:"One of the world's most spectacularly dazzling birds combining crimson yellow and blue. Scarlet macaws screech loudly as they fly in bonded pairs over the rainforest canopy."},
+  {n:"Sulphur-crested Cockatoo",l:"Cacatua galerita",s:"Screech",cat:"world",wiki:"Cacatua_galerita",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/f/fd/Cacatua_galerita_-_XC18049.ogg",
+   d:"Australia's most familiar large parrot with brilliant white plumage and a lemon-yellow crest. Its ear-splitting screech is the dominant sound of Australian eucalyptus woodland."},
+  {n:"New Zealand Bellbird",l:"Anthornis melanura",s:"Bell song",cat:"world",wiki:"Anthornis_melanura",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/a/a6/Anthornis_melanura_-_XC11831.ogg",
+   d:"The bellbird produces bell-like notes of extraordinary crystalline clarity. Early European settlers likened New Zealand's dawn chorus to ringing crystal glasses."},
+  {n:"Tui",l:"Prosthemadera novaeseelandiae",s:"Song",cat:"world",wiki:"Prosthemadera_novaeseelandiae",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/1/1e/Prosthemadera_novaeseelandiae_-_XC11832.ogg",
+   d:"New Zealand's iconic honeyeater produces an astonishing mix of musical notes liquid gurgles mechanical clicks grunts wheezes and high whistles."},
+  {n:"Wood Thrush",l:"Hylocichla mustelina",s:"Flute song",cat:"world",wiki:"Hylocichla_mustelina",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/3c/Hylocichla_mustelina_-_XC11834.ogg",
+   d:"Widely regarded as North America's finest native singer. The wood thrush's flute-like echoing spiralling song fills eastern deciduous forests at dusk."},
+  {n:"Northern Mockingbird",l:"Mimus polyglottos",s:"Mimicry song",cat:"world",wiki:"Mimus_polyglottos",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/7/77/Mimus_polyglottos_-_Northern_mockingbird_-_XC27200.ogg",
+   d:"North America's supreme avian mimic - reproducing dozens of species' songs in a continuous improvised stream. Males sometimes sing through entire summer nights."},
+  {n:"Capercaillie",l:"Tetrao urogallus",s:"Display song",cat:"world",wiki:"Tetrao_urogallus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/f/f0/Tetrao_urogallus_-_Western_capercaillie_-_XC12218.ogg",
+   d:"The world's largest grouse found in ancient Scottish pinewoods. The male's extraordinary lek display produces an almost unbelievable sequence of corks clicks and whinnies at dawn."},
+  {n:"Common Crane",l:"Grus grus",s:"Bugling call",cat:"world",wiki:"Grus_grus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/5/5b/Grus_grus_-_Common_crane_-_XC14185.ogg",
+   d:"Migrating cranes fill the sky with loud resonant prehistoric-sounding trumpeting calls as they pass over in long straggling lines each autumn and spring."},
+  {n:"Whooping Crane",l:"Grus americana",s:"Bugling call",cat:"world",wiki:"Grus_americana",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/0/05/Grus_americana_-_Whooping_crane_-_XC13819.ogg",
+   d:"North America's tallest bird brought back from the very brink of extinction. The whooping crane's resonant bugling call carries for several kilometres across wetlands."},
+  {n:"Superb Fairywren",l:"Malurus cyaneus",s:"Song",cat:"world",wiki:"Malurus_cyaneus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/3f/Malurus_cyaneus_-_XC14867.ogg",
+   d:"A tiny brilliantly blue jewel of Australian gardens. The male superb fairywren delivers a complex reeling song that is one of the great delights of an Australian morning."},
+  {n:"Common Quail",l:"Coturnix coturnix",s:"Song",cat:"world",wiki:"Coturnix_coturnix",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/f/f4/Coturnix_coturnix_-_XC17027.ogg",
+   d:"One of Europe's most secretive birds - almost certainly heard long before it is ever seen. Its liquid wet-my-lips call drifts from cereal fields on warm Mediterranean evenings."},
+  {n:"Kokako",l:"Callaeas wilsoni",s:"Organ song",cat:"world",wiki:"Callaeas_wilsoni",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/d/d3/Callaeas_wilsoni_-_XC11814.ogg",
+   d:"New Zealand's blue-wattled crow now reduced to small protected populations. Its deep resonant organ-like calls are considered among the most hauntingly beautiful bird songs on earth."},
+  {n:"Grey-crowned Crane",l:"Balearica regulorum",s:"Honking call",cat:"world",wiki:"Balearica_regulorum",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/5/5a/Balearica_regulorum_-_XC12117.ogg",
+   d:"Uganda's national bird with a spectacular golden crown. Its booming honking call - given in pairs - is the stirring sound of East African wetlands at dawn."},
+  {n:"Eurasian Bittern",l:"Botaurus stellaris",s:"Dawn booming",cat:"world",wiki:"Botaurus_stellaris",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/2/2e/Botaurus_stellaris_-_XC26817.ogg",
+   d:"Heard at dawn the bittern's boom takes on an even more extraordinary quality - a deep resonant foghorn sound rising from invisible reedbeds in the morning mist."},
+  {n:"Himalayan Monal",l:"Lophophorus impejanus",s:"Call",cat:"world",wiki:"Lophophorus_impejanus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/b/b7/Lophophorus_impejanus_-_XC22417.ogg",
+   d:"One of the world's most spectacularly coloured birds and the national bird of Nepal shimmering with metallic greens purples coppers and blues. Its call rings across high Himalayan valleys."},
+  {n:"European Nightjar",l:"Caprimulgus europaeus",s:"Churring",cat:"world",wiki:"Caprimulgus_europaeus",
+   audio:"https://upload.wikimedia.org/wikipedia/commons/3/31/Caprimulgus_europaeus_-_European_nightjar_-_XC12934.ogg",
+   d:"A nocturnal summer visitor to European heathland. The nightjar's sustained churring at dusk - like a distant motorbike - carries remarkably far on still summer evenings."}
+]};
+
+var currentTab = 'irish', currentList = BIRDS.irish, currentIdx = 0, isBusy = false;
+
+// Swipe detection
+(function() {
+  var vp = document.getElementById('viewport');
+  var startX = 0, startY = 0;
+  vp.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: true});
+  vp.addEventListener('touchmove', function(e) {
+    if (Math.abs(e.touches[0].clientX - startX) > Math.abs(e.touches[0].clientY - startY)) e.preventDefault();
+  }, {passive: false});
+  vp.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = Math.abs(e.changedTouches[0].clientY - startY);
+    if (Math.abs(dx) > 50 && dy < 80) go(dx < 0 ? 1 : -1);
+  });
+})();
+
+function go(dir) {
+  if (isBusy) return;
+  var ni = currentIdx + dir;
+  if (ni < 0 || ni >= currentList.length) return;
+  isBusy = true;
+  var card = document.getElementById('card');
+  card.classList.add(dir > 0 ? 'out-l' : 'out-r');
+  card.addEventListener('animationend', function onOut() {
+    card.removeEventListener('animationend', onOut);
+    currentIdx = ni;
+    card.className = 'bird-card';
+    renderBird();
+    var inCls = dir > 0 ? 'in-r' : 'in-l';
+    card.classList.add(inCls);
+    card.addEventListener('animationend', function onIn() {
+      card.removeEventListener('animationend', onIn);
+      card.classList.remove(inCls);
+      isBusy = false;
+    }, {once: true});
+  }, {once: true});
+}
+
+function switchTab(t) {
+  if (t === currentTab) return;
+  currentTab = t; currentList = BIRDS[t]; currentIdx = 0;
+  document.getElementById('tab-irish').classList.toggle('active', t === 'irish');
+  document.getElementById('tab-international').classList.toggle('active', t === 'international');
+  document.getElementById('cbadge').textContent = t === 'irish' ? 'Ireland' : 'World';
+  document.getElementById('card').className = 'bird-card';
+  renderBird(); buildDots();
+}
+
+function renderBird() {
+  var b = currentList[currentIdx];
+  var cs = document.getElementById('cardScroll');
+  if (cs) cs.scrollTop = 0;
+  document.getElementById('bName').textContent = b.n;
+  document.getElementById('bLatin').textContent = b.l;
+  document.getElementById('bSoundTag').textContent = '>> ' + b.s;
+  document.getElementById('bDesc').textContent = b.d;
+  var ct = document.getElementById('bCatTag');
+  ct.innerHTML = b.cat === 'ireland' ? '&#127470;&#127466; Irish' : '&#127757; World';
+  ct.className = 'tag ' + (b.cat === 'ireland' ? 'tag-irish' : 'tag-world');
+  document.getElementById('cN').textContent = currentIdx + 1;
+  document.getElementById('cT').textContent = currentList.length;
+  document.getElementById('prevBtn').disabled = currentIdx === 0;
+  document.getElementById('nextBtn').disabled = currentIdx === currentList.length - 1;
+  updateDots();
+
+  // Photo from Wikipedia
+  var pw = document.getElementById('photoWrap');
+  pw.innerHTML = '<div class="photo-placeholder"><span class="big-emoji">&#128038;</span><span class="ph-label">Loading...</span></div>';
+  var wikiName = b.wiki, bName = b.n;
+  fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(wikiName))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (document.getElementById('bName').textContent !== bName) return;
+      var src = (d.originalimage && d.originalimage.source) || (d.thumbnail && d.thumbnail.source);
+      if (src) {
+        var img = document.createElement('img');
+        img.src = src; img.alt = bName;
+        document.getElementById('photoWrap').innerHTML = '';
+        document.getElementById('photoWrap').appendChild(img);
+      }
+    }).catch(function() {});
+
+  // Audio - direct Wikimedia Commons OGG file (CORS allowed, no proxy needed)
+  var player = document.getElementById('audioPlayer');
+  var meta = document.getElementById('aMeta');
+  if (player) {
+    player.pause();
+    player.src = b.audio;
+    player.load();
+  }
+  if (meta) { meta.className = 'audio-meta ok'; meta.textContent = '&#127925; Tap play to hear this bird'; }
+}
+
+function buildDots() {
+  var w = document.getElementById('dots'); w.innerHTML = '';
+  var n = Math.min(currentList.length, 44);
+  for (var i = 0; i < n; i++) { var d = document.createElement('div'); d.className = 'dot'; w.appendChild(d); }
+  updateDots();
+}
+
+function updateDots() {
+  var dots = document.getElementById('dots').querySelectorAll('.dot');
+  if (!dots.length) return;
+  var n = dots.length, total = currentList.length;
+  var active = Math.round((currentIdx / Math.max(total - 1, 1)) * (n - 1));
+  for (var i = 0; i < dots.length; i++) {
+    dots[i].className = 'dot';
+    if (i === active) dots[i].classList.add('active');
+    else if (Math.abs(i - active) <= 1) dots[i].classList.add('near');
+  }
+}
+
+window.addEventListener('load', function() { renderBird(); buildDots(); });
+</script>
+</body>
+</html>

@@ -461,15 +461,15 @@ function renderBird() {
       }
     }).catch(function() {});
 
-  // Audio - direct Wikimedia Commons OGG file (CORS allowed, no proxy needed)
+  // Audio – store URL and reset player; don't pre-load (avoids error state on bad URLs)
   currentAudio = b.audio;
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
   if (player) {
     player.pause();
-    player.src = b.audio;
-    player.load();
+    player.removeAttribute('src');
+    player.load(); // abort any in-progress load and clear error state
   }
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
   if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap play to hear this bird'; }
@@ -480,30 +480,28 @@ function playAudio() {
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
-  if (!player) return;
-  
-  if (!player.src || player.src === window.location.href) {
-    // First tap - load and play
-    player.src = currentAudio;
-    player.load();
-  }
-  
+  if (!player || !currentAudio) return;
+
   if (player.paused) {
+    // Always set src fresh so we start from a clean state
+    player.src = currentAudio;
+    if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Loading…'; }
     player.play().then(function() {
-      if (btn) { btn.textContent = '\u23F8'; btn.style.background = '#c4785a'; }
-      if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Now playing...'; }
+      if (btn) { btn.innerHTML = '&#9646;&#9646; Pause'; btn.style.background = '#c4785a'; }
+      if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Now playing…'; }
     }).catch(function(e) {
-      if (meta) { meta.className = 'audio-meta err'; meta.textContent = 'Tap play again'; }
+      var msg = (e && e.name === 'NotSupportedError') ? 'Format not supported' : 'Could not load audio';
+      if (meta) { meta.className = 'audio-meta err'; meta.textContent = msg; }
     });
   } else {
     player.pause();
-    if (btn) { btn.textContent = '\u25B6'; btn.style.background = '#3a5a3c'; }
-    if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap the button to hear this bird'; }
+    if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
+    if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap play to hear this bird'; }
   }
-  
+
   player.onended = function() {
-    if (btn) { btn.textContent = '\u25B6'; btn.style.background = '#3a5a3c'; }
-    if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap the button to hear this bird'; }
+    if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
+    if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap play to hear this bird'; }
   };
 }
 

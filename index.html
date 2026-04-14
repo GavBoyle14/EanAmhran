@@ -461,18 +461,34 @@ function renderBird() {
       }
     }).catch(function() {});
 
-  // Audio – store URL and reset player; don't pre-load (avoids error state on bad URLs)
-  currentAudio = b.audio;
+  // Audio – reset player, then look up a fresh MP3 via xeno-canto API
+  currentAudio = b.audio; // Wikimedia OGG kept as fallback until XC responds
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
-  if (player) {
-    player.pause();
-    player.removeAttribute('src');
-    player.load(); // abort any in-progress load and clear error state
-  }
+  if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
-  if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Tap play to hear this bird'; }
+  if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Finding sound\u2026'; }
+  var _bName = b.n, _bLatin = b.l.split(' ').slice(0,2).join(' ');
+  fetch('https://xeno-canto.org/api/2/recordings?query=' + encodeURIComponent(_bLatin + ' q:A') + '&page=1')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (document.getElementById('bName').textContent !== _bName) return;
+      var recs = d.recordings;
+      if (recs && recs.length > 0) {
+        var f = recs[0].file;
+        currentAudio = f.indexOf('//') === 0 ? 'https:' + f : f;
+      }
+      var m2 = document.getElementById('aMeta');
+      if (m2) { m2.className = 'audio-meta ok'; m2.textContent = 'Tap play to hear this bird'; }
+    })
+    .catch(function() {
+      // XC unavailable – keep Wikimedia OGG fallback already in currentAudio
+      var m2 = document.getElementById('aMeta');
+      if (m2 && document.getElementById('bName').textContent === _bName) {
+        m2.className = 'audio-meta ok'; m2.textContent = 'Tap play to hear this bird';
+      }
+    });
 }
 
 

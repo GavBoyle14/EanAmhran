@@ -461,29 +461,40 @@ function renderBird() {
       }
     }).catch(function() {});
 
-  // Audio – reset player, then look up a fresh MP3 via xeno-canto API
-  currentAudio = b.audio; // Wikimedia OGG kept as fallback until XC responds
+  // Audio – reset player, then find a live audio file via Wikimedia Commons search API
+  currentAudio = b.audio; // keep stale OGG as last-resort fallback
   var player = document.getElementById('audioPlayer');
   var btn = document.getElementById('playBtn');
   var meta = document.getElementById('aMeta');
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
   if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Finding sound\u2026'; }
-  var _bName = b.n, _bLatin = b.l.split(' ').slice(0,2).join(' ');
-  fetch('https://xeno-canto.org/api/2/recordings?query=' + encodeURIComponent(_bLatin + ' q:A') + '&page=1')
+  var _bName = b.n, _bLatin = b.l.split(' ').slice(0, 2).join(' ');
+  // Query Wikimedia Commons for audio files matching this species – returns current, working URLs
+  fetch('https://commons.wikimedia.org/w/api.php?action=query&generator=search' +
+        '&gsrnamespace=6&gsrsearch=' + encodeURIComponent(_bLatin) +
+        '&gsrlimit=10&prop=imageinfo&iiprop=url|mediatype&format=json&origin=*')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (document.getElementById('bName').textContent !== _bName) return;
-      var recs = d.recordings;
-      if (recs && recs.length > 0) {
-        var f = recs[0].file;
-        currentAudio = f.indexOf('//') === 0 ? 'https:' + f : f;
+      var found = null;
+      if (d.query && d.query.pages) {
+        var keys = Object.keys(d.query.pages);
+        for (var i = 0; i < keys.length; i++) {
+          var info = d.query.pages[keys[i]].imageinfo;
+          if (info && info[0] && info[0].mediatype === 'AUDIO' && info[0].url) {
+            found = info[0].url; break;
+          }
+        }
       }
+      if (found) currentAudio = found;
       var m2 = document.getElementById('aMeta');
-      if (m2) { m2.className = 'audio-meta ok'; m2.textContent = 'Tap play to hear this bird'; }
+      if (m2 && document.getElementById('bName').textContent === _bName) {
+        m2.className = 'audio-meta ok';
+        m2.textContent = found ? 'Tap play to hear this bird' : 'Tap play (sound may be unavailable)';
+      }
     })
     .catch(function() {
-      // XC unavailable – keep Wikimedia OGG fallback already in currentAudio
       var m2 = document.getElementById('aMeta');
       if (m2 && document.getElementById('bName').textContent === _bName) {
         m2.className = 'audio-meta ok'; m2.textContent = 'Tap play to hear this bird';

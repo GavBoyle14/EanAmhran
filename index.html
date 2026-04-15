@@ -455,8 +455,6 @@ function renderBird() {
   if (b.img) {
     var img = document.createElement('img');
     img.src = b.img; img.alt = b.n;
-    img.style.objectFit = 'contain';
-    img.style.objectPosition = 'center center';
     pw.innerHTML = '';
     pw.appendChild(img);
   } else {

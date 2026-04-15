@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ean - Irish and World Bird Sounds</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -470,11 +472,14 @@ function renderBird() {
   var meta = document.getElementById('aMeta');
   if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
   if (btn) { btn.innerHTML = '&#9654; Play Bird Sound'; btn.style.background = '#3a5a3c'; }
-  if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Finding sound\u2026'; }
+  if (meta) { meta.className = 'audio-meta ok'; meta.textContent = 'Searching for audio\u2026'; }
   var _bName = b.n, _bWiki = b.wiki;
+  // &redirects is critical – b.wiki uses Latin names (e.g. Luscinia_megarhynchos)
+  // which are redirect pages on English Wikipedia; without it the generator
+  // returns files from the empty redirect stub, finding nothing.
   fetch('https://en.wikipedia.org/w/api.php?action=query&generator=images&gimlimit=50' +
-        '&titles=' + encodeURIComponent(_bWiki) +
-        '&prop=imageinfo&iiprop=url|mediatype&format=json&origin=*')
+        '&titles=' + encodeURIComponent(_bWiki) + '&redirects' +
+        '&prop=imageinfo&iiprop=url%7Cmediatype&format=json&origin=*')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (document.getElementById('bName').textContent !== _bName) return;
